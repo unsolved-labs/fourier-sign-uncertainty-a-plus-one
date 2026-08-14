@@ -1,0 +1,54 @@
+name: Live publication verification
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  verify-live-publication:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify deployed R012 route
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://unsolved-labs.github.io/results/r012-fourier-sign-uncertainty/'
+          body="$(curl --fail --silent --show-error --location --retry 5 --retry-delay 3 --max-time 30 "$url")"
+          grep -Fq 'One-dimensional Fourier sign-uncertainty bound' <<<"$body"
+          grep -Fq '0.551649' <<<"$body"
+          grep -Fq 'https://github.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one' <<<"$body"
+          echo 'Live R012 route verified.'
+
+      - name: Verify portfolio data exposes R012
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="$(curl --fail --silent --show-error --location --retry 5 --retry-delay 3 --max-time 30 https://unsolved-labs.github.io/assets/results.js)"
+          grep -Fq 'r012-fourier-sign-uncertainty' <<<"$body"
+          grep -Fq 'A<sub>+</sub>(1) &lt; 0.551649' <<<"$body"
+          echo 'R012 portfolio data verified.'
+
+      - name: Verify public research artifact links
+        shell: bash
+        run: |
+          set -euo pipefail
+          urls=(
+            'https://github.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/README.md'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/proof.md'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/verify.cpp'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/verify_release.sh'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/verification-report.json'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/coefficients/part1.txt'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/coefficients/part2.txt'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/coefficients/part3.txt'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/coefficients/part4.txt'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/coefficients/part5.txt'
+            'https://raw.githubusercontent.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one/main/coefficients/part6.txt'
+          )
+          for url in "${urls[@]}"; do
+            curl --fail --silent --show-error --location --retry 3 --max-time 30 --output /dev/null "$url"
+            echo "OK $url"
+          done
+          echo 'All public R012 artifact links verified.'
