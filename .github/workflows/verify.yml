@@ -1,0 +1,34 @@
+name: Exact verification
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  exact-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Boost headers
+        run: sudo apt-get update && sudo apt-get install -y libboost-dev
+      - name: Compile exact verifier
+        run: g++ -O3 -std=c++17 verify.cpp -o verify
+      - name: Near-root and low range
+        run: |
+          ./verify near
+          for a in 2 3 4 5 6 7 8 9; do ./verify range "$a" "$((a+1))"; done
+          for a in 10 15 20 25 30 35 40 45; do ./verify range "$a" "$((a+5))"; done
+          for a in 50 60 70 80 90; do ./verify range "$a" "$((a+10))"; done
+      - name: Middle range
+        run: |
+          for a in 100 200 300 400 500 600 700 800 900; do ./verify range "$a" "$((a+100))"; done
+      - name: Far range
+        run: |
+          for a in 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000; do ./verify range "$a" "$((a+1000))"; done
+          ./verify range 11000 11500
+      - name: Infinite tail and radius
+        run: |
+          ./verify tail
+          ./verify radius
+          echo 'R012 FULL EXACT REPLAY PASSED'

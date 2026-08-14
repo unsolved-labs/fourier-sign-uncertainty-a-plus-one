@@ -35,7 +35,8 @@ For a single exact interval check:
 ## Files
 
 - `proof.md` — theorem, construction, certificate logic, baseline, and limitations
-- `verify.cpp` — exact verifier with the complete degree-1800 witness embedded
+- `verify.cpp` — exact verifier
+- `coefficients/` — frozen 900-integer degree-1800 witness
 - `verify_release.sh` — clean-checkout full replay
 - `verification-report.json` — machine-readable frozen claim
 - `.github/workflows/verify.yml` — CI replay
