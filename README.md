@@ -24,11 +24,11 @@ This release does **not** determine the exact value of $A_+(1)$, provide a match
 
 ## Paper
 
-- [Typeset proof manuscript](manuscript/r012_fourier_sign_uncertainty.pdf)
-- [LaTeX source](manuscript/r012_fourier_sign_uncertainty.tex)
-- [Concise proof companion](proof.md)
+- [LaTeX manuscript source](manuscript/r012_fourier_sign_uncertainty.tex)
+- [Reproducible manuscript build instructions](manuscript/README.md)
+- [Concise GitHub-rendered proof companion](proof.md)
 
-The manuscript explains the mathematical reduction, exact certificate architecture, trust boundary, prior-work comparison, limitations, and reproducibility path.
+Run `make` in `manuscript/` to produce `r012_fourier_sign_uncertainty.pdf`. CI rebuilds the PDF from the canonical LaTeX source on every push and pull request; the generated PDF is treated as a build artifact rather than a separately edited source of truth.
 
 ## Verification
 
@@ -44,8 +44,7 @@ The production checker `verify.cpp`:
 
 1. parses exactly 900 frozen integer coefficients;
 2. reconstructs the degree-1800 scaled Laguerre polynomial exactly;
-3. proves strict positivity on the complete finite interval
-   $[1912071/1000000,12000]$ by exact Bernstein-basis subdivision;
+3. proves strict positivity on the complete finite interval $[1912071/1000000,12000]$ by exact Bernstein-basis subdivision;
 4. proves positivity on $[12000,\infty)$ from nonnegative shifted power-basis coefficients; and
 5. proves the strict comparison with `0.551649` using exact rational arithmetic and a rigorous lower bound for $\pi$.
 
@@ -67,22 +66,22 @@ See [VERIFICATION.md](VERIFICATION.md) for the precise trust boundary and [STATE
 - `STATEMENT_AUDIT.md` — public claim → manuscript → checker dependency map
 - `VERIFICATION.md` — clean-checkout commands, trust boundary, data identity
 - `proof.md` — GitHub-rendered proof companion
-- `manuscript/` — reproducible LaTeX paper and PDF
+- `manuscript/` — reproducible LaTeX paper source and build instructions
 - `verify.cpp` — complete production exact certificate checker
 - `verify_independent.py` — independent exact reconstruction/tail/radius checker
 - `coefficients/` — frozen 900-integer witness
 - `verify_release.sh` — one-command complete production replay
 - `verification-report.json` — machine-readable frozen claim
 - `.github/workflows/verify.yml` — sharded production CI replay
-- `.github/workflows/release-quality.yml` — independent replay and manuscript build checks
+- `.github/workflows/release-quality.yml` — independent replay, manuscript build, and public-boundary checks
 - `CITATION.cff` — citation metadata
+- `LICENSE` — public research-artifact rights notice
 
 ## Claim boundary
 
 The exact public claim is frozen in [CLAIM.md](CLAIM.md). In particular:
 
-- **proved:** an explicit upper bound
-  $A_+(1)\leq\sqrt{1912071/(2000000\pi)}<0.551649$;
+- **proved:** an explicit upper bound $A_+(1)\leq\sqrt{1912071/(2000000\pi)}<0.551649$;
 - **not proved:** the exact value of $A_+(1)$;
 - **not supplied:** a matching lower bound;
 - **not claimed:** optimality of the witness or verification of the coefficient search;
@@ -91,7 +90,7 @@ The exact public claim is frozen in [CLAIM.md](CLAIM.md). In particular:
 
 ## Reproducibility and AI-generation disclosure
 
-This is an AI-generated research artifact released by Unsolved Labs with an artifact-based verification boundary. The theorem is intended to be auditable from the public witness, manuscript, exact checkers, and pinned repository history; private model conversations or hidden reasoning traces are not part of the evidence.
+This is an AI-generated research artifact released by Unsolved Labs with an artifact-based verification boundary. The theorem is intended to be auditable from the public witness, manuscript source, exact checkers, and pinned repository history; private model conversations or hidden reasoning traces are not part of the evidence.
 
 ## Public release page
 
