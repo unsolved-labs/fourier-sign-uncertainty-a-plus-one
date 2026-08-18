@@ -1,4 +1,5 @@
 {
+  "schema_version": "1.1",
   "release": "R012",
   "title": "One-dimensional Fourier sign-uncertainty upper bound",
   "claim": "A_+(1) <= sqrt(1912071/(2000000*pi)) < 0.551649",
@@ -14,12 +15,48 @@
     "tail_start": 12000
   },
   "verification": {
+    "production_checker": "verify.cpp",
+    "production_replay": "./verify_release.sh",
     "arithmetic": "exact integer/rational",
     "finite_intervals": "Bernstein coefficients with exact dyadic de Casteljau subdivision",
     "infinite_tail": "nonnegative shifted power-basis coefficients",
     "radius_comparison": "rational lower bound for pi via Machin identity",
     "optimizer_required": false,
-    "floating_point_required_for_claim": false
+    "floating_point_required_for_claim": false,
+    "independent_checker": {
+      "path": "verify_independent.py",
+      "command": "python3 verify_independent.py",
+      "arithmetic": "Python arbitrary-precision integers and fractions.Fraction",
+      "coverage": [
+        "coefficient parsing/count",
+        "degree-1800 scaled Laguerre witness reconstruction",
+        "zero constant and positive leading coefficient",
+        "translated infinite-tail coefficient certificate",
+        "exact radius comparison"
+      ],
+      "not_covered": [
+        "complete finite [T,12000] Bernstein subdivision"
+      ]
+    }
+  },
+  "mathematical_dependencies_outside_checkers": [
+    "standard Laguerre-Gaussian Fourier eigenfunction identity",
+    "polynomial times Gaussian is Schwartz and Gaussian is positive",
+    "definition-to-bound implication for the frozen A_+(1) convention"
+  ],
+  "formalization": {
+    "lean": false,
+    "status": "not claimed",
+    "highest_value_targets": [
+      "Laguerre-Gaussian Fourier identity in the frozen normalization",
+      "admissible self-Fourier witness implies the A_+(1) upper bound",
+      "certificate-soundness bridge if a suitable polynomial library is used"
+    ]
+  },
+  "manuscript": {
+    "source": "manuscript/r012_fourier_sign_uncertainty.tex",
+    "build": "make -C manuscript",
+    "pdf": "manuscript/r012_fourier_sign_uncertainty.pdf (generated build artifact)"
   },
   "baseline": {
     "published_rigorous_upper_bound": "0.594",
@@ -29,6 +66,8 @@
     "Upper bound only; exact value not determined",
     "No matching lower bound",
     "No optimality claim for the finite-dimensional witness",
+    "Finite Bernstein certificate currently has one production implementation",
+    "Full proof-assistant formalization is not claimed",
     "Independent specialist review pending"
   ],
   "reviewStatus": "pending"
