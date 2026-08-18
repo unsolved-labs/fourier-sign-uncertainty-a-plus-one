@@ -1,0 +1,213 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}
+\newcommand{\R}{\mathbb R}
+\newcommand{\F}{\mathcal F}
+
+\title{A Certified Upper Bound for the One-Dimensional\\Fourier Sign-Uncertainty Constant}
+\author{Unsolved Labs}
+\date{Research Release R012, August 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We give an explicit Fourier-invariant Schwartz function proving
+\[
+A_+(1)\leq\sqrt{\frac{1912071}{2000000\pi}}<0.551649
+\]
+for the one-dimensional $+1$ Fourier sign-uncertainty constant under the normalization
+$\widehat f(y)=\int_{\R}f(x)e^{-2\pi ixy}\,dx$.
+The witness is a degree-$1800$ Laguerre--Gaussian combination with $900$ frozen integer coefficients.
+Its eventual positivity is certified entirely in exact integer/rational arithmetic: finite intervals are handled by Bernstein-basis positivity after exact affine changes and dyadic de Casteljau subdivision, while the infinite tail is certified by nonnegative coefficients after translation.
+The search that produced the witness is outside the proof boundary.
+A production C++17 verifier replays the full certificate, and a separately written Python checker independently reconstructs the witness and verifies the tail and radius comparison.
+The result is an upper bound only; no matching lower bound or optimality claim is made.
+\end{abstract}
+
+\section{Introduction}
+Fourier sign uncertainty asks how tightly a function and its Fourier transform can both become eventually nonnegative when they begin with the opposite sign at the origin.
+In the one-dimensional $+1$ eigenfunction formulation, $A_+(1)$ measures the smallest achievable eventual-positivity radius among admissible self-Fourier Schwartz witnesses.
+The rigorous one-dimensional comparison used by this release is the bound
+\[
+0.45\leq A_+(1)\leq0.594
+\]
+from Gon\c{c}alves, Oliveira e Silva, and Steinerberger (arXiv:1602.03366).
+Later work, including arXiv:2003.10771, reports sharper numerical phenomena while separating those computations from rigorous proof.
+
+R012 contributes a new explicit rigorously certified upper-bound witness.
+The contribution is intentionally narrow: no claim is made that the witness is extremal, that the exact value of $A_+(1)$ is determined, or that the search procedure producing the coefficients is verified.
+
+\section{Definitions and normalization}
+We use
+\[
+\widehat f(y)=\int_{\R} f(x)e^{-2\pi ixy}\,dx.
+\]
+In the frozen $+1$ formulation, an admissible witness is a nonzero real Schwartz function with $\widehat f=f$, $f(0)\leq0$, and $f(x)\geq0$ outside a symmetric interval.
+For such a witness let
+\[
+r(f)=\inf\{r\geq0:f(x)\geq0\text{ for every }|x|\geq r\}.
+\]
+Then any admissible witness gives $A_+(1)\leq r(f)$.
+
+\section{The explicit witness}
+Let $L_n^{-1/2}$ be the generalized Laguerre polynomial and define
+\[
+p(t)=\sum_{k=1}^{900}N_k\left(L_{2k}^{-1/2}(t)-L_{2k}^{-1/2}(0)\right),
+\qquad
+f(x)=p(2\pi x^2)e^{-\pi x^2},
+\]
+where the integers $N_1,\dots,N_{900}$ are frozen verbatim in
+\texttt{coefficients/part1.txt} through \texttt{coefficients/part6.txt}.
+By construction $p(0)=f(0)=0$.
+
+The standard Laguerre--Gaussian identity is
+\[
+\F\!\left[L_n^{-1/2}(2\pi x^2)e^{-\pi x^2}\right]
+=(-1)^nL_n^{-1/2}(2\pi x^2)e^{-\pi x^2}.
+\]
+Only even indices occur, hence $\widehat f=f$.
+The polynomial has degree $1800$ with positive leading coefficient, so $f$ is nonzero; polynomial times Gaussian is Schwartz.
+It remains to certify eventual positivity.
+
+\section{Exact polynomial reconstruction}
+Define the integer-scaled Laguerre polynomials
+\[
+R_n(t)=2^n n!L_n^{-1/2}(t).
+\]
+They satisfy
+\[
+R_0=1,\quad R_1=1-2t,
+\]
+and
+\[
+R_{n+1}=(4n+1-2t)R_n-2n(2n-1)R_{n-1}.
+\]
+The production verifier reconstructs an integer polynomial $P(t)$ that is a positive scalar multiple of $p(t)$ and checks exactly
+\[
+\deg P=1800,\qquad P(0)=0,
+\]
+with positive leading coefficient.
+Set
+\[
+T=\frac{1912071}{1000000}=1.912071.
+\]
+
+\section{Finite-interval positivity}
+For a rational interval $[a,b]$, the verifier performs an exact affine substitution to $[0,1]$ and converts the resulting polynomial to a scaled Bernstein basis.
+If every Bernstein coefficient is positive, the polynomial is positive throughout the interval because the Bernstein basis functions are nonnegative on $[0,1]$.
+When a parent interval is not immediately certified, exact dyadic de Casteljau subdivision is applied recursively.
+All proof arithmetic is on arbitrary-precision integers; sampled positivity and floating-point root finding are absent from the proof path.
+
+The release replay covers the complete finite interval
+\[
+[T,12000].
+\]
+The block partition in \texttt{verify\_release.sh} and CI is only computational.
+
+\section{Infinite tail}
+The verifier expands
+\[
+P(12000+u)=\sum_{j=0}^{1800}d_j u^j
+\]
+and checks exactly
+\[
+d_0>0,\qquad d_j\geq0\quad(1\leq j\leq1800).
+\]
+Therefore $P(t)>0$ for all $t\geq12000$.
+Together with the finite certificates,
+\[
+P(t)>0\qquad(t\geq T).
+\]
+Since $P$ is a positive scalar multiple of $p$ and the Gaussian is positive,
+\[
+f(x)>0\qquad\text{whenever }2\pi x^2\geq T.
+\]
+Hence
+\[
+r(f)\leq\sqrt{\frac{T}{2\pi}}
+=\sqrt{\frac{1912071}{2000000\pi}}.
+\]
+
+\section{Exact radius comparison}
+The verifier does not use a floating-point value of $\pi$ as proof evidence.
+It obtains a rational lower bound from Machin's identity
+\[
+\pi=16\arctan(1/5)-4\arctan(1/239)
+\]
+and alternating arctangent truncation, and proves exactly
+\[
+\frac{T}{2\pi}<\left(\frac{551649}{10^6}\right)^2.
+\]
+Thus
+\[
+\sqrt{\frac{T}{2\pi}}<0.551649.
+\]
+
+\begin{theorem}[R012]
+Under the Fourier normalization above,
+\[
+A_+(1)\leq\sqrt{\frac{1912071}{2000000\pi}}<0.551649.
+\]
+\end{theorem}
+
+\begin{proof}
+The explicit $f$ is a nonzero Schwartz function with $f(0)=0$ and $\widehat f=f$ by the even-index Laguerre--Gaussian identity.
+The exact production certificate proves $p(t)>0$ for every $t\geq T$.
+Consequently $f(x)>0$ whenever $|x|\geq\sqrt{T/(2\pi)}$, so the defining variational inequality gives $A_+(1)\leq\sqrt{T/(2\pi)}$.
+The exact rational $\pi$ comparison proves the final strict decimal inequality.
+\end{proof}
+
+\section{Verification architecture and trust boundary}
+The repository separates discovery from verification.
+The coefficient-search procedure is not required to reproduce the theorem.
+A clean checkout needs only the six frozen coefficient files and the released checkers.
+
+\paragraph{Production replay.}
+\texttt{verify.cpp} reconstructs the exact scaled polynomial, proves all finite Bernstein certificates, proves the translated tail, and proves the rational radius comparison.
+The wrapper \texttt{verify\_release.sh} performs the complete replay; GitHub Actions shards the finite proof for operational reliability.
+
+\paragraph{Independent partial replay.}
+\texttt{verify\_independent.py} is a separately written Python implementation using arbitrary-precision integers and \texttt{fractions.Fraction}.
+It independently reconstructs the degree-$1800$ witness, checks the translated infinite-tail certificate, and proves the radius comparison.
+It intentionally does not duplicate the complete finite Bernstein subdivision.
+Thus the finite interval certificate still has one production implementation; this limitation is public and explicit.
+
+\paragraph{Mathematical dependencies.}
+The checkers do not formalize the Laguerre--Gaussian Fourier identity or the abstract definition-to-bound implication for $A_+(1)$.
+Those facts are stated explicitly here and in \texttt{STATEMENT\_AUDIT.md}; they are the natural targets for future proof-assistant formalization.
+The release does not claim a Lean proof at present.
+
+\section{Prior work and novelty boundary}
+The frozen rigorous comparison is arXiv:1602.03366, supplying the $0.594$ upper bound cited by this release.
+Later numerical work such as arXiv:2003.10771 is context, not a replacement rigorous theorem unless explicitly proved there.
+The novelty claim is only the explicit exactly certified witness establishing the displayed $0.551649$ upper bound.
+No exact value, new lower bound, or witness optimality is claimed.
+
+\section{Reproducibility}
+From a clean checkout run
+\begin{verbatim}
+./verify_release.sh
+python3 verify_independent.py
+\end{verbatim}
+The first is the complete production proof replay; the second is the independent exact structural/tail/radius replay.
+See \texttt{CLAIM.md}, \texttt{STATEMENT\_AUDIT.md}, and \texttt{VERIFICATION.md} for the statement mapping and trust boundary.
+
+\section{AI-generation disclosure}
+This research artifact was generated with frontier AI and is released by Unsolved Labs with an artifact-based verification boundary.
+The public claim rests on the explicit witness, exact certificate checks, and the mathematical dependencies stated above; it does not rely on private model conversations or hidden reasoning traces.
+
+\section{References}
+\begin{thebibliography}{9}
+\bibitem{GOS16}
+F. Gon\c{c}alves, D. Oliveira e Silva, and S. Steinerberger,
+rigorous one-dimensional sign-uncertainty bounds, arXiv:1602.03366 (2016).
+\bibitem{CG20}
+Subsequent work on sign uncertainty and numerical structure, arXiv:2003.10771 (2020).
+\end{thebibliography}
+\end{document}
