@@ -1,0 +1,65 @@
+name: Release quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  independent-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Independent exact witness/tail/radius replay
+        run: python3 verify_independent.py
+
+  manuscript:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y latexmk texlive-latex-base texlive-latex-recommended texlive-fonts-recommended
+      - name: Build manuscript
+        working-directory: manuscript
+        run: make
+      - name: Confirm manuscript PDF exists
+        working-directory: manuscript
+        run: test -s r012_fourier_sign_uncertainty.pdf
+
+  public-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required public release files
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in README.md CLAIM.md STATEMENT_AUDIT.md VERIFICATION.md proof.md verification-report.json verify.cpp verify_independent.py verify_release.sh manuscript/r012_fourier_sign_uncertainty.tex; do
+            test -s "$f"
+          done
+      - name: Reject legacy display-math delimiters in public Markdown
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n -F '\[' --include='*.md' .; then
+            echo 'legacy \\[ display-math delimiter found in Markdown' >&2
+            exit 1
+          fi
+          if grep -R -n -F '\]' --include='*.md' .; then
+            echo 'legacy \\] display-math delimiter found in Markdown' >&2
+            exit 1
+          fi
+      - name: Reject obvious private/local artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n -E '(/home/[^/ ]+|/Users/[^/ ]+|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|ghp_[A-Za-z0-9]+)' --exclude-dir=.git .; then
+            echo 'possible private/local material found' >&2
+            exit 1
+          fi
