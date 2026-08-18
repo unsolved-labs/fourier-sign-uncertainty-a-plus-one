@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: >-
+  If you use this verified research artifact, cite the repository and manuscript.
+title: "One-dimensional Fourier sign-uncertainty upper bound - verified research release"
+type: software
+authors:
+  - name: "Unsolved Labs"
+repository-code: "https://github.com/unsolved-labs/fourier-sign-uncertainty-a-plus-one"
+url: "https://unsolved-labs.github.io/results/r012-fourier-sign-uncertainty/"
+date-released: 2026-08-14
