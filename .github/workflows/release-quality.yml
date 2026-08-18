@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for f in README.md CLAIM.md STATEMENT_AUDIT.md VERIFICATION.md proof.md verification-report.json verify.cpp verify_independent.py verify_release.sh manuscript/r012_fourier_sign_uncertainty.tex; do
+          for f in README.md CLAIM.md STATEMENT_AUDIT.md VERIFICATION.md SOURCE_AUDIT.md proof.md verification-report.json verify.cpp verify_independent.py verify_release.sh manuscript/r012_fourier_sign_uncertainty.tex manuscript/README.md; do
             test -s "$f"
           done
       - name: Reject legacy display-math delimiters in public Markdown
@@ -59,7 +59,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if grep -R -n -E '(/home/[^/ ]+|/Users/[^/ ]+|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|ghp_[A-Za-z0-9]+)' --exclude-dir=.git .; then
+          if grep -R -n -E '(/home/[^/ ]+|/Users/[^/ ]+|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|ghp_[A-Za-z0-9]+)' \
+              --exclude-dir=.git --exclude='release-quality.yml' .; then
             echo 'possible private/local material found' >&2
             exit 1
           fi
