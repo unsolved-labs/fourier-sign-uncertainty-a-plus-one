@@ -89,11 +89,9 @@ def threshold : ℝ := (1912071 : ℝ) / 1000000
 /-- Public decimal comparison radius `0.551649`. -/
 def decimalRadius : ℝ := (551649 : ℝ) / 1000000
 
-@[positivity]
 theorem threshold_nonneg : 0 ≤ threshold := by
   norm_num [threshold]
 
-@[positivity]
 theorem decimalRadius_nonneg : 0 ≤ decimalRadius := by
   norm_num [decimalRadius]
 
