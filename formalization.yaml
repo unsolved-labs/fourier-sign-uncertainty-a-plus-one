@@ -1,0 +1,95 @@
+version: "v0.3"
+
+project:
+  name: "R012 Fourier sign-uncertainty certificate bridge in Lean"
+  authors:
+    - "Unsolved Labs"
+  license: "all-rights-reserved"
+
+sources:
+  - title: "A Certified Upper Bound for the One-Dimensional +1 Fourier Sign-Uncertainty Constant"
+    authors:
+      - "Unsolved Labs"
+    id: "manuscript/r012_fourier_sign_uncertainty.tex"
+    type: "paper"
+    license: "all-rights-reserved"
+    author_contacted: "n/a"
+
+status:
+  scope: >-
+    Partial Lean 4 and Mathlib formalization of the R012 certificate-to-bound
+    bridge. It uses Mathlib's actual real Fourier transform to define
+    self-Fourier admissibility, formalizes the self-Fourier sign-radius infimum,
+    proves that polynomial positivity beyond a threshold transfers through the
+    Gaussian lift to nonnegativity outside the corresponding radius, and proves
+    with Mathlib's rigorous pi bound that the R012 threshold lies below radius
+    0.551649. The main theorem derives the decimal upper-bound bridge from
+    explicit external hypotheses for positivity, integrability, nontriviality,
+    and Fourier self-duality. It does not formalize the 900-coefficient finite
+    Bernstein certificate or the generalized Laguerre-Gaussian Fourier
+    eigenfunction identity.
+  sorry_count: 1
+  sorry_in_definitions: 0
+  notes: >-
+    The sole sorry is the isolated Comparator challenge fixture in
+    Challenge.lean. It is not imported by the production proof; the listed main
+    result is sorry-free. This metadata describes a partial formalization and
+    must not be cited as a full Lean proof of R012.
+  axioms:
+    - "propext"
+    - "Quot.sound"
+    - "Classical.choice"
+  main_results:
+    - declaration: "R012.r012_decimal_bound_from_certificate"
+      file: "R012/Bridge.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+      comparator_config: "comparator/r012_bridge.json"
+
+automation:
+  methods:
+    - method: "agent"
+      models:
+        - "GPT-5.6 Sol"
+      framework: "OpenAI"
+      tool_setup: >-
+        Used for formalization development, verification engineering, and
+        public exposition; correctness is determined by the pinned Lean kernel
+        build and release checks rather than model output.
+  notes: >-
+    This is an AI-generated public research artifact maintained by Unsolved
+    Labs. No conventional human authorship is implied.
+
+fidelity:
+  divergences: >-
+    The manuscript's concrete witness uses a degree-1800 Laguerre-Gaussian
+    polynomial with 900 frozen coefficients. The Lean bridge abstracts that
+    concrete polynomial to a real function p and takes its exact eventual
+    positivity, integrability/nontriviality of the Gaussian lift, and actual
+    Mathlib Fourier self-duality as explicit hypotheses. Consequently Lean
+    verifies the theorem-level certificate-to-radius logic and the 0.551649
+    numerical scale comparison, but not the coefficient certificate or the
+    generalized Laguerre Fourier identity.
+
+review:
+  status: "machine-verified-partial"
+  reviewers: []
+  notes: >-
+    The partial Lean bridge is intended to be checked by the pinned build,
+    production-source scan, trust-zero axiom audit, Comparator statement check,
+    and immutable reusable release contract. Independent specialist review of
+    the mathematical release remains pending.
+
+alignment:
+  statements:
+    - source: "Manuscript certificate-to-radius implication and strict 0.551649 comparison"
+      lean: "R012.r012_decimal_bound_from_certificate"
+      module: "R012.Bridge"
+      status: "proved-conditionally-on-explicit-external-obligations"
+
+verification:
+  namespace: "R012"
+  challenge_module: "Challenge"
+  solution_module: "Solution"
+  audit_module: "R012.Audit"
+  comparator_config: "comparator/r012_bridge.json"
