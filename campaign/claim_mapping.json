@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "target_id": "P12",
+  "formalization_id": "C12-v1",
+  "target_statement_sha256": "a56815405e0a00f9e8658ee02dfa077c0201d9981455b35fdb8ceda39d8f8211",
+  "base_snapshot_sha256": "134b06da454dbce57f5aae321b0b9f4adfa448ebf91fb49856e5d6c9c23b619c",
+  "claims": [
+    {
+      "claim_id": "C1",
+      "claim_statement_sha256": "d1babd76840d5cc145a32fc9c14522dee7cf8bdb810f66d012d2804ed1d77111",
+      "formal_declaration": "R012.r012_decimal_bound_from_certificate",
+      "role": "supporting_lemma",
+      "status": "artifact-verified"
+    }
+  ]
+}
