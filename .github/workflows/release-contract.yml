@@ -1,0 +1,21 @@
+name: Lean release contract
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    uses: unsolved-labs/lean-research-release-contract/.github/workflows/kalton-contract.yml@db99fd22330138ca6f2effe6eaf4088d8e7a7b07
+    with:
+      contract_sha: db99fd22330138ca6f2effe6eaf4088d8e7a7b07
+      working_directory: "."
+      namespace: "R012"
+      challenge_module: "Challenge"
+      solution_module: "Solution"
+      audit_module: "R012.Audit"
+      comparator_config: "comparator/r012_bridge.json"
