@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "release": "R012",
   "title": "One-dimensional Fourier sign-uncertainty upper bound",
   "claim": "A_+(1) <= sqrt(1912071/(2000000*pi)) < 0.551649",
@@ -39,22 +39,44 @@
       ]
     }
   },
-  "mathematical_dependencies_outside_checkers": [
-    "standard Laguerre-Gaussian Fourier eigenfunction identity",
-    "polynomial times Gaussian is Schwartz and Gaussian is positive",
-    "definition-to-bound implication for the frozen A_+(1) convention"
-  ],
   "formalization": {
-    "lean": false,
-    "status": "not claimed",
-    "highest_value_targets": [
-      "Laguerre-Gaussian Fourier identity in the frozen normalization",
-      "admissible self-Fourier witness implies the A_+(1) upper bound",
-      "certificate-soundness bridge if a suitable polynomial library is used"
-    ]
+    "lean": true,
+    "status": "partial machine-verified certificate-to-bound bridge",
+    "toolchain": "leanprover/lean4:v4.32.0",
+    "mathlib_commit": "81a5d257c8e410db227a6665ed08f64fea08e997",
+    "main_declaration": "R012.r012_exact_and_decimal_bounds_from_certificate",
+    "formalized_definition": "R012.APlusOneSelfFourier",
+    "coverage": [
+      "Mathlib real Fourier transform used in the self-Fourier predicate",
+      "self-Fourier sign-radius infimum and witness-to-infimum upper-bound lemma",
+      "Gaussian-lift positivity transfer from polynomial threshold to spatial radius",
+      "exact radius sqrt((1912071/1000000)/(2*pi))",
+      "rigorous strict comparison of exact radius with 0.551649",
+      "combined certificate-to-exact-radius and decimal-bound theorem under explicit external witness hypotheses"
+    ],
+    "not_covered": [
+      "complete 900-coefficient finite Bernstein certificate inside Lean",
+      "generalized Laguerre-Gaussian Fourier eigenfunction identity for the concrete witness",
+      "kernel-checked discharge of integrability/nontriviality for the concrete witness",
+      "equivalence with every alternate literature definition of A_+(1)"
+    ],
+    "permitted_axioms": [
+      "propext",
+      "Quot.sound",
+      "Classical.choice"
+    ],
+    "comparator_config": "comparator/r012_bridge.json",
+    "release_contract_commit": "db99fd22330138ca6f2effe6eaf4088d8e7a7b07"
   },
+  "mathematical_dependencies_outside_full_formalization": [
+    "generalized Laguerre-Gaussian Fourier eigenfunction identity for the concrete witness",
+    "kernel-checked link from the concrete coefficient certificate to the abstract Lean positivity hypothesis",
+    "kernel-checked integrability/nontriviality discharge for the concrete witness",
+    "equivalence between the formalized self-Fourier infimum and every alternate literature formulation of A_+(1)"
+  ],
   "manuscript": {
     "source": "manuscript/r012_fourier_sign_uncertainty.tex",
+    "proof_note": "manuscript/proof_note.md",
     "build": "make -C manuscript",
     "pdf": "manuscript/r012_fourier_sign_uncertainty.pdf (generated build artifact)"
   },
@@ -67,7 +89,7 @@
     "No matching lower bound",
     "No optimality claim for the finite-dimensional witness",
     "Finite Bernstein certificate currently has one production implementation",
-    "Full proof-assistant formalization is not claimed",
+    "Lean formalization is partial rather than a complete concrete proof",
     "Independent specialist review pending"
   ],
   "reviewStatus": "pending"
