@@ -26,7 +26,7 @@ $\widehat f(y)=\int_{\R}f(x)e^{-2\pi ixy}\,dx$.
 The witness is a degree-$1800$ Laguerre--Gaussian combination with $900$ frozen integer coefficients.
 Its eventual positivity is certified entirely in exact integer/rational arithmetic: finite intervals are handled by Bernstein-basis positivity after exact affine changes and dyadic de Casteljau subdivision, while the infinite tail is certified by nonnegative coefficients after translation.
 The search that produced the witness is outside the proof boundary.
-A production C++17 verifier replays the full certificate, and a separately written Python checker independently reconstructs the witness and verifies the tail and radius comparison.
+A production C++17 verifier replays the full certificate, a separately written Python checker independently reconstructs the witness and verifies the tail and radius comparison, and a pinned Lean 4/Mathlib package kernel-checks the certificate-to-exact-radius and decimal-comparison bridge under explicit external witness obligations.
 The result is an upper bound only; no matching lower bound or optimality claim is made.
 \end{abstract}
 
@@ -166,7 +166,7 @@ The exact rational $\pi$ comparison proves the final strict decimal inequality.
 \section{Verification architecture and trust boundary}
 The repository separates discovery from verification.
 The coefficient-search procedure is not required to reproduce the theorem.
-A clean checkout needs only the six frozen coefficient files and the released checkers.
+A clean checkout needs only the six frozen coefficient files and the released verification artifacts.
 
 \paragraph{Production replay.}
 \texttt{verify.cpp} reconstructs the exact scaled polynomial, proves all finite Bernstein certificates, proves the translated tail, and proves the rational radius comparison.
@@ -178,10 +178,20 @@ It independently reconstructs the degree-$1800$ witness, checks the translated i
 It intentionally does not duplicate the complete finite Bernstein subdivision.
 Thus the finite interval certificate still has one production implementation; this limitation is public and explicit.
 
-\paragraph{Mathematical dependencies.}
-The checkers do not formalize the Laguerre--Gaussian Fourier identity or the abstract definition-to-bound implication for $A_+(1)$.
-Those facts are stated explicitly here and in \texttt{STATEMENT\_AUDIT.md}; they are the natural targets for future proof-assistant formalization.
-The release does not claim a Lean proof at present.
+\paragraph{Partial Lean bridge.}
+The repository pins Lean 4.32.0 and a fixed Mathlib revision.
+The production declaration \texttt{R012.r012\_exact\_and\_decimal\_bounds\_from\_certificate} uses Mathlib's actual real Fourier transform to define self-Fourier admissibility.
+For an abstract real function $p$, Lean proves that exact positivity for $t\geq T$, together with integrability, nontriviality, and actual Fourier self-duality of the Gaussian lift, implies
+\[
+A^{\mathrm{sf}}_+(1)\leq\sqrt{\frac{T}{2\pi}}<0.551649,
+\]
+where $A^{\mathrm{sf}}_+(1)$ is the precise self-Fourier sign-radius infimum defined in the formalization.
+Lean checks the threshold-to-radius implication, exact square-root rescaling, and strict decimal comparison using a rigorous Mathlib lower bound for $\pi$.
+The formal statement is isolated in \texttt{Challenge.lean}, matched against \texttt{Solution.lean} by Comparator, audited at trust level zero, replayed with \texttt{leanchecker}, and checked by the immutable reusable release contract.
+
+This formalization is intentionally partial.
+It does not kernel-check the full 900-coefficient Bernstein certificate, the generalized Laguerre--Gaussian Fourier identity for the concrete witness, the concrete integrability/nontriviality discharge, or equivalence with every alternate literature definition of $A_+(1)$.
+These remaining obligations are explicit in \texttt{formalization.yaml}, \texttt{STATEMENT\_AUDIT.md}, and \texttt{manuscript/proof\_note.md}; no full Lean proof of the concrete release is claimed.
 
 \section{Prior work and novelty boundary}
 The frozen rigorous comparison is arXiv:1602.03366, supplying the $0.594$ upper bound cited by this release.
@@ -194,13 +204,16 @@ From a clean checkout run
 \begin{verbatim}
 ./verify_release.sh
 python3 verify_independent.py
+lake exe cache get
+lake build R012 Challenge Solution R012.Audit
+lake env lean --trust=0 R012/Audit.lean
 \end{verbatim}
-The first is the complete production proof replay; the second is the independent exact structural/tail/radius replay.
-See \texttt{CLAIM.md}, \texttt{STATEMENT\_AUDIT.md}, and \texttt{VERIFICATION.md} for the statement mapping and trust boundary.
+The first command is the complete concrete production certificate replay; the second is the independent exact structural/tail/radius replay; the Lean commands verify the partial formal bridge.
+See \texttt{CLAIM.md}, \texttt{STATEMENT\_AUDIT.md}, \texttt{VERIFICATION.md}, and \texttt{formalization.yaml} for the statement mapping and trust boundary.
 
 \section{AI-generation disclosure}
 This research artifact was generated with frontier AI and is released by Unsolved Labs with an artifact-based verification boundary.
-The public claim rests on the explicit witness, exact certificate checks, and the mathematical dependencies stated above; it does not rely on private model conversations or hidden reasoning traces.
+The public claim rests on the explicit witness, exact certificate checks, the stated mathematical dependencies, and the partial kernel-checked bridge; it does not rely on private model conversations or hidden reasoning traces.
 
 \section{References}
 \begin{thebibliography}{9}
