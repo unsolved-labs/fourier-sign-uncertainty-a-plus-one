@@ -1,14 +1,14 @@
 # R012 verification and reproducibility
 
-R012 is a computer-assisted proof with an explicit finite witness. The search that produced the witness is **not** trusted. The released theorem depends on a frozen coefficient vector, exact arithmetic, and standard Fourier/Laguerre mathematics.
+R012 is a computer-assisted proof with an explicit finite witness and a partial Lean certificate-to-bound formalization. The search that produced the witness is **not** trusted. The released theorem depends on a frozen coefficient vector, exact arithmetic, the stated Fourier/Laguerre mathematics, and the explicitly documented bridge between these layers.
 
 ## Clean-checkout replay
 
 Requirements:
 
-- a C++17 compiler;
-- Boost headers;
-- Python 3.11+ for the independent structural/tail replay.
+- a C++17 compiler and Boost headers for the complete production certificate;
+- Python 3.11+ for the independent structural/tail/radius replay;
+- Lean 4.32.0 / Lake for the partial Lean bridge (the repository pins the toolchain and Mathlib revision).
 
 Run the production proof replay:
 
@@ -22,11 +22,19 @@ Run the independent exact reconstruction/tail/radius replay:
 python3 verify_independent.py
 ```
 
-The GitHub Actions workflow `.github/workflows/verify.yml` shards the production finite-interval proof and also runs the independent Python path.
+Run the partial Lean bridge:
+
+```bash
+lake exe cache get
+lake build R012 Challenge Solution R012.Audit
+lake env lean --trust=0 R012/Audit.lean
+```
+
+CI separately runs the sharded production certificate, independent replay, manuscript build, native Lean audit, and immutable reusable Lean release contract.
 
 ## Production checker: `verify.cpp`
 
-The C++17 checker is the production certificate checker for the theorem. It uses only exact integer/rational arithmetic for proof obligations.
+The C++17 checker is the production certificate checker for the concrete witness. It uses only exact integer/rational arithmetic for proof obligations.
 
 It reconstructs
 
@@ -71,26 +79,81 @@ It intentionally does **not** duplicate the complete finite `[T,12000]` Bernstei
 
 This distinction is part of the public trust boundary and must not be described as a fully independent second proof of the entire theorem.
 
-## Mathematical dependencies outside the checkers
+## Partial Lean bridge
 
-The checkers certify the polynomial/certificate arithmetic. The following mathematical bridge remains conventional mathematical reasoning documented in `proof.md` and the manuscript:
+The Lean project is pinned to:
 
-1. the Laguerre-Gaussian Fourier identity
+- Lean `v4.32.0`;
+- Mathlib commit `81a5d257c8e410db227a6665ed08f64fea08e997`.
+
+The principal production declaration is:
+
+`R012.r012_exact_and_decimal_bounds_from_certificate`.
+
+The formalization defines `R012.IsSelfFourier` using Mathlib's actual real Fourier transform and defines a precise self-Fourier sign-radius infimum `R012.APlusOneSelfFourier`. For an abstract real function $p$, Lean proves that if:
+
+1. $p(0)=0$;
+2. $p(t)\geq0$ for every $t\geq T$;
+3. the Gaussian lift $p(2\pi x^2)e^{-\pi x^2}$ is integrable and nonzero; and
+4. that Gaussian lift is self-Fourier under Mathlib's transform,
+
+then
+
+$$
+A^{\mathrm{sf}}_+(1)
+\leq \sqrt{\frac{T}{2\pi}}
+<0.551649.
+$$
+
+Load-bearing Lean lemmas include:
+
+- `APlusOneSelfFourier_le_of_radius`;
+- `gaussianLift_nonnegative_outside`;
+- `threshold_eq_scale_exact`;
+- `threshold_lt_scale_decimal`;
+- `exactRadius_lt_decimal`;
+- `r012_exact_bound_from_certificate`;
+- `r012_exact_and_decimal_bounds_from_certificate`.
+
+The strict decimal inequality is proved with Mathlib's rigorous lower bound for $\pi$, not a floating-point approximation.
+
+### Lean trust checks
+
+The package includes:
+
+- `Challenge.lean` with exactly one intentional `sorry`, isolated outside production sources;
+- `Solution.lean` with the same reviewed theorem statement;
+- `comparator/r012_bridge.json` for statement comparison;
+- `R012/Audit.lean` with `#print axioms` endpoints;
+- a production-source scan rejecting `sorry`, `admit`, `native_decide`, kernel bypasses, and unsafe declaration forms;
+- trust-zero axiom auditing limited to `propext`, `Classical.choice`, and `Quot.sound`;
+- fresh kernel replay with `leanchecker`;
+- `formalization.yaml` v0.3 and `campaign/claim_mapping.json`; and
+- the reusable contract workflow pinned immutably at `unsolved-labs/lean-research-release-contract@db99fd22330138ca6f2effe6eaf4088d8e7a7b07`.
+
+The Lean layer is **partial**. Passing the Lean release contract certifies the stated bridge package, not the complete concrete R012 proof.
+
+## Mathematical dependencies still outside the full formal package
+
+The following remain outside the Lean kernel boundary for the concrete witness:
+
+1. the generalized Laguerre-Gaussian Fourier identity
 
    $$
    \mathcal F\!\left[L_n^{-1/2}(2\pi x^2)e^{-\pi x^2}\right]
    =(-1)^nL_n^{-1/2}(2\pi x^2)e^{-\pi x^2};
    $$
 
-2. only even indices occur, hence the witness is self-Fourier;
-3. polynomial times Gaussian is Schwartz and the Gaussian factor is positive; and
-4. an admissible self-Fourier witness positive outside radius $r$ yields $A_+(1)\le r$ under the frozen definition/convention.
+2. the derivation that only even indices in the released concrete witness discharge the actual Mathlib Fourier self-duality hypothesis;
+3. a kernel-checked proof that the concrete 900-coefficient polynomial satisfies the abstract positivity hypothesis (the C++ exact certificate proves this outside Lean);
+4. a formal proof that the concrete polynomial-times-Gaussian witness discharges the Lean integrability/nontriviality hypotheses; and
+5. equivalence between `R012.APlusOneSelfFourier` and every alternate literature formulation of $A_+(1)$.
 
-These are the highest-value targets for future proof-assistant formalization. A full Lean formalization is **not currently claimed**. Adding a Lean file containing these facts merely as assumptions would not strengthen the trust boundary and should not be done.
+These are genuine remaining formalization targets. They are not replaced by assumptions hidden in the production theorem: the assumptions are explicit in the Comparator statement and metadata.
 
 ## Source-data identity
 
-The coefficient data are frozen in the following Git blobs on the audited `main` baseline:
+The coefficient data are frozen in the following Git blobs on the audited release baseline:
 
 | File | Git blob SHA |
 |---|---|
@@ -101,21 +164,23 @@ The coefficient data are frozen in the following Git blobs on the audited `main`
 | `coefficients/part5.txt` | `9040f34ec50ae648a3c5e618e3e1a55a90b1b136` |
 | `coefficients/part6.txt` | `b8b42878a42c50dc38c0dc793e2de5a64d86d708` |
 
-Future coefficient changes constitute a new witness and require a new statement/data audit and verification report.
+Future coefficient changes constitute a new witness and require a new statement/data audit, verification report, and formalization-fidelity audit.
 
 ## Trust boundary summary
 
-Trusted inputs/dependencies:
+Trusted inputs/dependencies include:
 
-- standard C++ compiler/Boost multiprecision semantics for the production replay;
+- standard C++ compiler/Boost multiprecision semantics for the complete certificate replay;
 - Python integer/Fraction semantics for the independent partial replay;
-- the standard mathematical Fourier/Laguerre facts listed above;
+- the pinned Lean 4 kernel and pinned Mathlib revision for the partial formal bridge;
+- the generalized Laguerre-Gaussian identity and remaining concrete-witness mathematical dependencies listed above; and
 - the six frozen coefficient files.
 
 Not trusted:
 
 - the optimizer/search process that found the witness;
 - floating-point root finding or sampled positivity;
-- the printed floating-point decimal emitted for convenience by `verify radius`.
+- the printed floating-point decimal emitted for convenience by `verify radius`; or
+- the isolated `Challenge.lean` `sorry` as production evidence.
 
-The proof claim depends only on exact checks and the stated mathematical bridge.
+The public theorem is supported by the exact concrete certificate plus the stated mathematical bridge; the Lean package independently kernel-checks a substantial theorem-level portion of that bridge while keeping the remaining obligations explicit.

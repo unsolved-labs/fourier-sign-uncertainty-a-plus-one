@@ -1,6 +1,6 @@
 # Certified upper bound for the one-dimensional +1 Fourier sign-uncertainty constant
 
-For the full paper, see [`manuscript/r012_fourier_sign_uncertainty.pdf`](manuscript/r012_fourier_sign_uncertainty.pdf). The exact public statement is frozen in [`CLAIM.md`](CLAIM.md), and [`STATEMENT_AUDIT.md`](STATEMENT_AUDIT.md) maps each load-bearing step to the machine-verification boundary.
+For the full paper, see [`manuscript/r012_fourier_sign_uncertainty.tex`](manuscript/r012_fourier_sign_uncertainty.tex) and its reproducible build instructions. The exact public statement is frozen in [`CLAIM.md`](CLAIM.md), and [`STATEMENT_AUDIT.md`](STATEMENT_AUDIT.md) maps each load-bearing step to the machine/formal verification boundary.
 
 ## Frozen theorem
 
@@ -116,6 +116,23 @@ The verifier proves the comparison with `0.551649` using a rational lower bound 
 
 It does **not** duplicate the complete finite Bernstein subdivision. That limitation is deliberate and public; the finite interval proof currently has one production implementation.
 
+## Partial Lean bridge
+
+The repository contains a pinned Lean 4 / Mathlib formalization of the certificate-to-bound bridge. `R012.IsSelfFourier` uses Mathlib's actual real Fourier transform. The main theorem
+
+`R012.r012_exact_and_decimal_bounds_from_certificate`
+
+proves, from explicit hypotheses of polynomial-side eventual positivity, Gaussian-lift integrability/nontriviality, and actual Fourier self-duality, that the formalized self-Fourier sign-radius infimum satisfies
+
+$$
+A^{\mathrm{sf}}_+(1)\leq
+\sqrt{\frac{T}{2\pi}}<0.551649.
+$$
+
+Lean also checks the exact rescaling identity and the strict decimal comparison using Mathlib's rigorous $\pi$ bound. The formal statement is isolated in `Challenge.lean` and checked against `Solution.lean` by Comparator; production Lean sources contain no `sorry` or `admit`.
+
+This is not a full Lean proof of the concrete R012 witness. The concrete 900-coefficient finite Bernstein certificate and generalized Laguerre-Gaussian Fourier identity remain outside the Lean kernel boundary. See [`manuscript/proof_note.md`](manuscript/proof_note.md) and [`VERIFICATION.md`](VERIFICATION.md).
+
 ## Baseline and novelty boundary
 
 The frozen rigorous comparison is the one-dimensional upper bound `0.594` from:
@@ -132,12 +149,12 @@ The novelty claim is intentionally narrow: an explicit, exactly certified constr
 
 The search that found the coefficient vector is not part of the proof. The public claim depends on:
 
-1. the standard Laguerre-Gaussian Fourier eigenfunction identity;
+1. the generalized Laguerre-Gaussian Fourier eigenfunction identity for the concrete witness;
 2. the 900 frozen integer coefficients;
 3. exact reconstruction and positivity/radius checks in `verify.cpp`; and
-4. the definition-to-bound implication for the frozen $A_+(1)$ convention.
+4. the definition-to-bound bridge, now partially kernel-checked in Lean with the remaining concrete-witness obligations explicit.
 
-The production checker contains no optimizer and does not trust sampled positivity or floating-point root finding. The analytic mathematical bridge is not currently formalized in Lean; see [`VERIFICATION.md`](VERIFICATION.md) for why a fake assumption-based formalization would not improve the trust boundary.
+The production checker contains no optimizer and does not trust sampled positivity or floating-point root finding. The Lean package does not hide the remaining mathematical dependencies as axioms or opaque declarations.
 
 ## Limitations
 
@@ -146,4 +163,5 @@ The production checker contains no optimizer and does not trust sampled positivi
 - The degree-1800 witness is not claimed optimal, even in its finite Laguerre space.
 - The coefficient search is not part of the verified proof.
 - The finite Bernstein certificate currently has one production implementation.
+- The Lean verification is a partial bridge, not a full formalization of the concrete witness.
 - Independent specialist review remains pending.

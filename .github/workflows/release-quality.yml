@@ -12,7 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - name: Independent exact witness/tail/radius replay
         run: python3 verify_independent.py
 
@@ -20,7 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - name: Install LaTeX
         run: |
           sudo apt-get update
@@ -35,14 +39,32 @@ jobs:
   public-boundary:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - name: Check required public release files
         shell: bash
         run: |
           set -euo pipefail
-          for f in README.md CLAIM.md STATEMENT_AUDIT.md VERIFICATION.md SOURCE_AUDIT.md proof.md verification-report.json verify.cpp verify_independent.py verify_release.sh manuscript/r012_fourier_sign_uncertainty.tex manuscript/README.md; do
-            test -s "$f"
-          done
+          required=(
+            README.md CLAIM.md STATEMENT_AUDIT.md VERIFICATION.md
+            SOURCE_AUDIT.md NOVELTY_AUDIT.md proof.md verification-report.json
+            verify.cpp verify_independent.py verify_release.sh
+            manuscript/r012_fourier_sign_uncertainty.tex manuscript/README.md manuscript/proof_note.md
+            lean-toolchain lakefile.toml lake-manifest.json R012.lean
+            R012/Statement.lean R012/Main.lean R012/Bridge.lean R012/Audit.lean
+            Challenge.lean Solution.lean formalization.yaml
+            comparator/r012_bridge.json campaign/claim_mapping.json campaign/README.md
+            .github/workflows/lean.yml .github/workflows/release-contract.yml
+          )
+          for f in "${required[@]}"; do test -s "$f"; done
+      - name: Validate machine-readable JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m json.tool verification-report.json >/dev/null
+          python3 -m json.tool comparator/r012_bridge.json >/dev/null
+          python3 -m json.tool campaign/claim_mapping.json >/dev/null
       - name: Reject legacy display-math delimiters in public Markdown
         shell: bash
         run: |
