@@ -75,8 +75,8 @@ jobs:
                   sys.exit(1)
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           groups = re.findall(r'depends on axioms:\s*\[([^\]]*)\]', text, flags=re.S)
-          if len(groups) != 4:
-              print(f'expected 4 audited axiom groups, found {len(groups)}', file=sys.stderr)
+          if len(groups) != 8:
+              print(f'expected 8 audited axiom groups, found {len(groups)}', file=sys.stderr)
               sys.exit(1)
           for group in groups:
               names = {n.strip() for n in group.replace('\n', ' ').split(',') if n.strip()}
