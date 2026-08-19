@@ -26,7 +26,7 @@ jobs:
           build: false
           test: false
           lint: false
-          use-github-cache: false
+          use-github-cache: true
           use-mathlib-cache: true
       - name: Verify exact pins
         shell: bash
@@ -36,20 +36,20 @@ jobs:
           lake env lean --version
           test "$(git -C .lake/packages/mathlib rev-parse HEAD)" = \
             "81a5d257c8e410db227a6665ed08f64fea08e997"
-      - name: Build formal bridge
+      - name: Build formal bridge and Comparator wrappers
         env:
           LEAN_NUM_THREADS: '2'
         shell: bash
         run: |
           set -euo pipefail
-          lake build R012 R012.Audit
+          lake build R012 Challenge Solution R012.Audit
       - name: Reject production proof shortcuts
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import pathlib, re, sys
-          sources = [pathlib.Path('R012.lean')]
+          sources = [pathlib.Path('R012.lean'), pathlib.Path('Solution.lean')]
           sources.extend(sorted(pathlib.Path('R012').rglob('*.lean')))
           pattern = re.compile(r'\b(?:sorry|admit|native_decide)\b|debug\.skipKernelTC|Lean\.ofReduceBool|^\s*(?:axiom|opaque|unsafe|extern|partial)\b|^\s*@\[implemented_by')
           hits=[]
@@ -67,5 +67,26 @@ jobs:
         run: |
           set -euo pipefail
           lake env lean --trust=0 R012/Audit.lean 2>&1 | tee axioms.log
-          ! grep -Fq 'sorryAx' axioms.log
-          ! grep -Fq 'Lean.trustCompiler' axioms.log
+          python3 - <<'PY'
+          import pathlib, re, sys
+          text = pathlib.Path('axioms.log').read_text(encoding='utf-8')
+          for marker in ('sorryAx', 'Lean.trustCompiler'):
+              if marker in text:
+                  sys.exit(1)
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          groups = re.findall(r'depends on axioms:\s*\[([^\]]*)\]', text, flags=re.S)
+          if len(groups) != 4:
+              print(f'expected 4 audited axiom groups, found {len(groups)}', file=sys.stderr)
+              sys.exit(1)
+          for group in groups:
+              names = {n.strip() for n in group.replace('\n', ' ').split(',') if n.strip()}
+              if names - allowed:
+                  print(f'forbidden axioms: {sorted(names - allowed)}', file=sys.stderr)
+                  sys.exit(1)
+          print('All audited R012 bridge endpoints use only the permitted Lean axioms.')
+          PY
+      - name: Fresh kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env leanchecker --fresh R012.Bridge
