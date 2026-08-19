@@ -86,14 +86,32 @@ theorem gaussianLift_nonnegative_outside {p : ℝ → ℝ} {T r : ℝ}
 /-- Exact R012 polynomial threshold. -/
 def threshold : ℝ := (1912071 : ℝ) / 1000000
 
+/-- Exact R012 radius `sqrt(threshold / (2*pi))`. -/
+def exactRadius : ℝ := Real.sqrt (threshold / (2 * Real.pi))
+
 /-- Public decimal comparison radius `0.551649`. -/
 def decimalRadius : ℝ := (551649 : ℝ) / 1000000
 
 theorem threshold_nonneg : 0 ≤ threshold := by
   norm_num [threshold]
 
+theorem exactRadius_nonneg : 0 ≤ exactRadius := by
+  exact Real.sqrt_nonneg _
+
 theorem decimalRadius_nonneg : 0 ≤ decimalRadius := by
   norm_num [decimalRadius]
+
+theorem decimalRadius_pos : 0 < decimalRadius := by
+  norm_num [decimalRadius]
+
+/-- The exact radius rescales to the certified polynomial threshold. -/
+theorem threshold_eq_scale_exact :
+    threshold = 2 * Real.pi * exactRadius ^ 2 := by
+  have hden : 0 < 2 * Real.pi := mul_pos (by norm_num) Real.pi_pos
+  have hq : 0 ≤ threshold / (2 * Real.pi) :=
+    div_nonneg threshold_nonneg hden.le
+  rw [exactRadius, Real.sq_sqrt hq]
+  field_simp [hden.ne']
 
 /-- Mathlib's rigorous lower bound on π suffices to prove that the R012
 threshold is reached strictly before radius `0.551649`. -/
@@ -102,15 +120,42 @@ theorem threshold_lt_scale_decimal :
   dsimp [threshold, decimalRadius]
   nlinarith [Real.pi_gt_d6]
 
-/-- Load-bearing formal bridge for the public decimal bound.
+/-- The exact certified radius is strictly below the public decimal comparison. -/
+theorem exactRadius_lt_decimal : exactRadius < decimalRadius := by
+  have hden : 0 < 2 * Real.pi := mul_pos (by norm_num) Real.pi_pos
+  rw [exactRadius, Real.sqrt_lt' decimalRadius_pos]
+  rw [div_lt_iff₀ hden]
+  simpa [mul_comm, mul_left_comm, mul_assoc] using threshold_lt_scale_decimal
 
-The external obligations are explicit hypotheses:
-* exact positivity of `p(t)` for `t ≥ threshold`;
-* integrability and nontriviality of the resulting Gaussian witness; and
-* the actual Mathlib Fourier self-duality of that witness.
+/-- Exact-radius certificate bridge. The external obligations are explicit:
+exact positivity of `p`, integrability/nontriviality of its Gaussian lift, and
+actual Mathlib Fourier self-duality. -/
+theorem r012_exact_bound_from_certificate (p : ℝ → ℝ)
+    (hp0 : p 0 = 0)
+    (hp : ∀ t : ℝ, threshold ≤ t → 0 ≤ p t)
+    (hint : Integrable (complexify (gaussianLift p)))
+    (hnonzero : gaussianLift p ≠ 0)
+    (hself : IsSelfFourier (gaussianLift p)) :
+    APlusOneSelfFourier ≤ exactRadius := by
+  apply APlusOneSelfFourier_le_of_radius
+  refine ⟨exactRadius_nonneg, gaussianLift p, ?_, ?_⟩
+  · exact ⟨hint, hnonzero, gaussianLift_zero hp0, hself⟩
+  · exact gaussianLift_nonnegative_outside exactRadius_nonneg
+      threshold_eq_scale_exact.le hp
 
-Given those obligations, Lean proves the sign-radius implication and the strict
-numerical scale comparison used by R012. -/
+/-- Load-bearing formal bridge matching both inequalities displayed by R012:
+the exact certified radius and its strict decimal comparison. -/
+theorem r012_exact_and_decimal_bounds_from_certificate (p : ℝ → ℝ)
+    (hp0 : p 0 = 0)
+    (hp : ∀ t : ℝ, threshold ≤ t → 0 ≤ p t)
+    (hint : Integrable (complexify (gaussianLift p)))
+    (hnonzero : gaussianLift p ≠ 0)
+    (hself : IsSelfFourier (gaussianLift p)) :
+    APlusOneSelfFourier ≤ exactRadius ∧ exactRadius < decimalRadius := by
+  exact ⟨r012_exact_bound_from_certificate p hp0 hp hint hnonzero hself,
+    exactRadius_lt_decimal⟩
+
+/-- Decimal corollary retained for direct comparison with the public headline. -/
 theorem r012_decimal_bound_from_certificate (p : ℝ → ℝ)
     (hp0 : p 0 = 0)
     (hp : ∀ t : ℝ, threshold ≤ t → 0 ≤ p t)
@@ -118,10 +163,7 @@ theorem r012_decimal_bound_from_certificate (p : ℝ → ℝ)
     (hnonzero : gaussianLift p ≠ 0)
     (hself : IsSelfFourier (gaussianLift p)) :
     APlusOneSelfFourier ≤ decimalRadius := by
-  apply APlusOneSelfFourier_le_of_radius
-  refine ⟨decimalRadius_nonneg, gaussianLift p, ?_, ?_⟩
-  · exact ⟨hint, hnonzero, gaussianLift_zero hp0, hself⟩
-  · exact gaussianLift_nonnegative_outside decimalRadius_nonneg
-      threshold_lt_scale_decimal.le hp
+  exact (r012_exact_bound_from_certificate p hp0 hp hint hnonzero hself).trans
+    exactRadius_lt_decimal.le
 
 end R012
