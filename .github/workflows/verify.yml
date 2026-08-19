@@ -4,12 +4,17 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   near-low:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y libboost-dev
       - run: g++ -O3 -std=c++17 verify.cpp -o verify
       - name: Verify near root through 10
@@ -21,7 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y libboost-dev
       - run: g++ -O3 -std=c++17 verify.cpp -o verify
       - name: Verify 10 through 50
@@ -32,7 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y libboost-dev
       - run: g++ -O3 -std=c++17 verify.cpp -o verify
       - name: Verify 50 through 100
@@ -43,7 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y libboost-dev
       - run: g++ -O3 -std=c++17 verify.cpp -o verify
       - name: Verify 100 through 500
@@ -54,7 +65,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y libboost-dev
       - run: g++ -O3 -std=c++17 verify.cpp -o verify
       - name: Verify 500 through 1000
@@ -65,7 +78,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y libboost-dev
       - run: g++ -O3 -std=c++17 verify.cpp -o verify
       - name: Verify 1000 through 6000
@@ -76,7 +91,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y libboost-dev
       - run: g++ -O3 -std=c++17 verify.cpp -o verify
       - name: Verify 6000 through 11500
@@ -88,7 +105,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y libboost-dev
       - run: g++ -O3 -std=c++17 verify.cpp -o verify
       - name: Verify infinite tail and exact radius comparison
